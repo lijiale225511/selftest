@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>工作平台</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<style>
+  #WebGL-output{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+</style>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+<script type="text/javascript" src = "plugin/jquery-3.6.0.js">
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/stats.js/r11/Stats.min.js"></script>
+<script src = "plugin/1.js"></script>
+<body>
+<div id="WebGL-output">
+</div>
+<div style="background-color: rgba(0,0,0,.5);;margin-top: 100px;margin-left: 600px;margin-right: 600px">
+  <template id="index">
+    <el-row :gutter="20" class="el-row" type="flex">
+      <el-col :span="4" class="el-col">
+      </el-col>
+      <el-col :span="16" class="el-col" style="color: cadetblue;text-align: center">
+        <h1 >垃圾分类管理后台界面</h1>
+        <div style="margin-top: 50px;">
+          <h3><a href="pages/admintable.html" style="text-decoration: none;color: brown" >用户管理</a></h3><br><br>
+          <h3><a href="pages/rubbishtable_admin.html" style="text-decoration: none;color: #b621fe">垃圾分类管理</a></h3><br><br>
+        </div>
+      </el-col>
+      <el-col :span="4" class="el-col">
+      </el-col>
+    </el-row>
+  </template>
+</div>
+<script type="text/javascript" src="./plugin/vue.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script type="text/javascript" src="./plugin/axios.min.js"></script>
+<script type="text/javascript">
+  new Vue({
+    el: '#index',
+    created() {
+      axios.interceptors.request.use(
+              config => {
+                // 这里的config包含每次请求的内容，假设有一个token
+                const token = localStorage.getItem('token');
+                if (token) {
+                  // 添加headers
+                  config.headers.token = token;
+                  config.headers['content-type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+                }
+                return config
+              },
+              error => {
+                return Promise.reject(error)
+              }
+      )
+      axios.interceptors.response.use(
+              response => {
+                if (response.headers.token_status !== 'ok') {
+                  window.location.href = 'login.html';
+                }
+                return response
+              },
+              error => {
+                return Promise.reject(error)
+              }
+      )
+      axios.post('api/login/token').then(function (response) {
+        //为了触发拦截器，啥都不干
+      }).catch(function (error) {
+        console.log(error);
+      });
+    }
+  })
+</script>
+</body>
+</html>

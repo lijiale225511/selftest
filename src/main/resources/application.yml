@@ -1,0 +1,48 @@
+server:
+  port: 8989
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/webtest?useUnicode=true&characterEncoding=utf-8&useSSL=true&useAffectedRows=true&serverTimezone=UTC
+    username: root
+    password: 255118
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    useGlobalDataSourceStat: true
+    filters: stat,wall,log4j
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 0
+      max-file-size: -1
+      max-request-size: -1
+  upload:
+    folder: C:/Users/Lee/Desktop/JavaWeb/IdeaProjects/selftest/Upload/Upload
+  thymeleaf:
+    cache: false
+    encoding: utf-8
+    mode: HTML5
+    prefix: classpath:/templates/
+    suffix: .html
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis:
+  type-aliases-package: com.nit.ssm.dto
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

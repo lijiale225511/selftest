@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Thymeleaf模板示例</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<el-row :gutter="20" class="el-row" type="flex">
+    <el-col :span="8" class="el-col">
+    </el-col>
+    <el-col :span="8" class="el-col" style="color: #409EFF; text-align: center">
+        <h3>下面的数据是怎么怎么显示出来的？</h3>
+        <p th:text="${userModel.user.loginCode}"></p>
+        <p th:text="${userModel.user.userName}"></p>
+        <p th:text="${userModel.user.userPhone}"></p>
+        <p th:text="${userModel.user.userEmail}"></p>
+    </el-col>
+    <el-col :span="8" class="el-col">
+    </el-col>
+</el-row>
+</body>
+</html>

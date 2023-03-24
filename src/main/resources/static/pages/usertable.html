@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="">
+<head>
+    <meta charset="UTF-8">
+    <title>数据表格</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<template id="table" class="container">
+    <el-row :gutter="20" class="el-row" type="flex">
+        <el-col :span="4" class="el-col">
+        </el-col>
+        <el-col :span="16" class="el-col">
+<!--            <el-row :gutter="20" class="el-row" type="flex">-->
+<!--                <el-col :span="12" class="el-col">-->
+<!--                    <el-button size="mini" type="primary" @click="handleAdd">新增</el-button>-->
+<!--                </el-col>-->
+<!--                <el-col :span="9" class="el-col">-->
+<!--                    <el-input size="mini" v-model="queryText" placeholder="登录账号/用户姓名"></el-input>-->
+<!--                </el-col>-->
+<!--                <el-col :span="3" class="el-col">-->
+<!--                    <el-button size="mini" type="warning" @click="handleQuery">查询</el-button>-->
+<!--                </el-col>-->
+<!--            </el-row>-->
+            <el-row :gutter="20" class="el-row" type="flex">
+                <el-col :span="24" class="el-col" style="text-align: center">
+                    <!--数据表格开始-->
+                    <el-table :data="listTable" v-loading="listLoading">
+                        <el-table-column label="序号" prop="userId" align="center" min-width="6%">
+                        </el-table-column>
+                        <el-table-column label="登录账号" prop="loginCode" align="center" min-width="12%">
+                        </el-table-column>
+                        <el-table-column label="用户姓名" prop="userName" align="center" min-width="12%">
+                        </el-table-column>
+                        <el-table-column label="电子邮箱" prop="userEmail" align="center" min-width="19%">
+                        </el-table-column>
+                        <el-table-column label="手机号码" prop="userPhone" align="center" min-width="14%">
+                        </el-table-column>
+                        <el-table-column label="类型" prop="userType" align="center" min-width="12%">
+                            <template scope="scope">
+                                <p v-if="scope.row.userType=='1'">管理员</p>
+                                <p v-if="scope.row.userType=='2'">用户</p>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" align="center" min-width="25%">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="success"
+                                           @click="handleEdit(scope.$index, scope.row)">编辑
+                                </el-button>
+                                <el-button size="mini" type="info"
+                                           @click="handleUpload(scope.$index, scope.row)">图片
+                                </el-button>
+                                <el-button size="mini" type="danger"
+                                           @click="handleDelete(scope.$index, scope.row)">删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <!--数据表格结束-->
+                    <!--数据分页开始-->
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page="currentPage"
+                            :page-size="pageSize"
+                            :page-sizes="[5, 10, 20, 50, 100]"
+                            layout="total, sizes, prev, pager, next, jumper"
+                            :total="total">
+                    </el-pagination>
+                    <!--数据分页结束-->
+                    <!--新增编辑开始-->
+                    <el-dialog title="用户信息" width="400px" :visible.sync="dlgFormVisible">
+                        <el-form :model="dlgForm" :rules="rules" ref="dlgForm" :label-width="formLabelWidth">
+                            <el-input type="hidden" v-model="dlgForm.userId"></el-input>
+                            <el-form-item label="登录账号：" prop="loginCode">
+                                <el-input v-model="dlgForm.loginCode" placeholder="请输入登录账号"
+                                          :readonly="isRead"></el-input>
+                            </el-form-item>
+                            <el-form-item label="登录密码：" prop="loginPwd">
+                                <el-input v-model="dlgForm.loginPwd" placeholder="请输入登录密码"
+                                          :readonly="isRead"></el-input>
+                            </el-form-item>
+                            <el-form-item label="用户姓名：" prop="userName">
+                                <el-input v-model="dlgForm.userName" placeholder="请输入用户姓名"></el-input>
+                            </el-form-item>
+                            <el-form-item label="电子邮箱：" prop="userEmail">
+                                <el-input v-model="dlgForm.userEmail" placeholder="请输入电子邮箱"></el-input>
+                            </el-form-item>
+                            <el-form-item label="手机号码：" prop="userEmail">
+                                <el-input v-model="dlgForm.userPhone" placeholder="请输入手机号码"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button size="mini" @click="closeForm('dlgForm')">取 消</el-button>
+                                <el-button size="mini" type="primary" @click="submitForm('dlgForm')">确 定</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-dialog>
+                    <!--新增编辑结束-->
+                    <!--图片展示示例-->
+                    <el-image :src="imgUrl" fit="scale-down" lazy
+                              style="width:360px; margin: 20px auto;">
+                        <div slot="error" class="image-slot">
+                            <i class="el-icon-picture-outline"></i>
+                        </div>
+                    </el-image>
+                    <!--图片上传开始-->
+                    <el-dialog title="图片上传" width="300px" :visible.sync="dlgUploadVisible">
+                        <el-form :model="dlgUpload" ref="dlgUpload">
+                            <el-form-item>
+                                <input type="file" ref="file" @change="getFile($event)" multiple="multiplt"/>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button size="mini" @click="closeUpload('dlgUpload')">取 消</el-button>
+                                <el-button size="mini" type="primary" @click="submitUpload('dlgUpload')">确 定</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-dialog>
+                    <!--图片上传结束-->
+                </el-col>
+            </el-row>
+        </el-col>
+        <el-col :span="4" class="el-col">
+        </el-col>
+    </el-row>
+</template>
+<!-- 引入组件库 -->
+<script type="text/javascript" src="../plugin/vue.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script type="text/javascript" src="../plugin/axios.min.js"></script>
+<script type="text/javascript" src="../plugin/md5.js"></script>
+<script type="text/javascript">
+    const vm = new Vue({
+        el: '#table',
+        data() {
+            return {
+                //数据表格
+                listTable: [],
+                listLoading: false,
+                currentPage: 1,
+                pageSize: 5,
+                total: 0,
+                queryText: '',
+                //新增编辑
+                dlgFormVisible: false,
+                formLabelWidth: '100px',
+                opFlag: 'add',
+                isRead: false,
+                dlgForm: {
+                    userId: 0,
+                    loginCode: '',
+                    loginPwd: '',
+                    userName: '',
+                    userImage: '',
+                    userEmail: '',
+                    userPhone: '',
+                    userType: '',
+                },
+                rules: {
+                    loginCode: [
+                        {required: true, message: '登录账号', trigger: 'blur'},
+                        {min: 3, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur'}
+                    ],
+                    userName: [
+                        {required: true, message: '用户姓名', trigger: 'blur'},
+                        {min: 3, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur'}
+                    ]
+                },
+                //图片上传
+                dlgUploadVisible: false,
+                dlgUpload: {
+                    imgData: null,
+                },
+                imgUrl: ""
+            };
+        },
+        created() {
+            axios.interceptors.request.use(
+                config => {
+                    // 这里的config包含每次请求的内容，假设有一个token
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        // 添加headers
+                        config.headers.token = token;
+                        config.headers['content-type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+                    }
+                    return config
+                },
+                error => {
+                    return Promise.reject(error)
+                }
+            )
+            axios.interceptors.response.use(
+                response => {
+                    if (response.headers.token_status !== 'ok') {
+                        window.location.href = 'login.html';
+                    }
+                    return response
+                },
+                error => {
+                    return Promise.reject(error)
+                }
+            )
+        },
+        mounted: function () {
+            this.getTableData();
+        },
+        methods: {
+            //获取数据表格数据
+            getTableData: function () {
+                this.listLoading = true;
+                let postData = new FormData();
+                postData.append('queryText', this.queryText);
+                postData.append('currentPage', this.currentPage);
+                postData.append('pageSize', this.pageSize);
+                const _this = this;
+                axios.post('../api/user/query', postData).then(function (response) {
+                    _this.listLoading = false;
+
+
+                    _this.listTable = response.data.listTable;
+                    _this.total = response.data.total;
+                    console.log(response.data);
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            //分页PageSize大小改变
+            handleSizeChange: function (size) {
+                this.pageSize = size;
+                this.getTableData();
+            },
+            //分页当前页改变
+            handleCurrentChange: function (currentPage) {
+                this.currentPage = currentPage;
+                this.getTableData();
+            },
+            //查询
+            handleQuery: function () {
+                this.getTableData();
+            },
+            //新增
+            handleAdd: function () {
+                this.dlgFormVisible = true;
+                this.opFlag = 'add';
+                this.isRead = false;
+                this.dlgForm.userId = 0;
+                this.dlgForm.loginCode = "";
+                this.dlgForm.loginPwd = "";
+                this.dlgForm.userName = "";
+                this.dlgForm.userEmail = "";
+                this.dlgForm.userPhone = "";
+            },
+            //编辑
+            handleEdit: function (index, row) {
+                this.dlgFormVisible = true;
+                this.opFlag = 'edit';
+                this.isRead = true;
+                this.dlgForm.userId = row.userId;
+                this.dlgForm.loginCode = row.loginCode;
+                this.dlgForm.loginPwd = row.loginPwd;
+                this.dlgForm.userName = row.userName;
+                this.dlgForm.userEmail = row.userEmail;
+                this.dlgForm.userPhone = row.userPhone;
+
+            },
+            //删除（应该弹出确认对话框啊！！！）
+            handleDelete: function (index, row) {
+                const _this = this;
+                this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let postData = new FormData();
+                    postData.append('userId', row.userId);
+                    axios.post('../api/user/remove', postData).then(function (response) {
+                        if (response.data.msgResult === "success") {
+                            _this.getTableData();
+                        }
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                }).catch(() => {
+                    console.log("已取消删除");
+                });
+            },
+            //新增编辑提交
+            submitForm: function (formName) {
+                const _this = this;
+                this.$refs[formName].validate(function (valid) {
+                    if (valid) {
+                        let postData = new FormData();
+                        postData.append('userId', _this.dlgForm.userId);
+                        postData.append('loginCode', _this.dlgForm.loginCode);
+                        postData.append('loginPwd', md5(_this.dlgForm.loginPwd));
+                        postData.append('userName', _this.dlgForm.userName);
+                        postData.append('userEmail', _this.dlgForm.userEmail);
+                        postData.append('userPhone', _this.dlgForm.userPhone);
+                        axios.post('../api/user/' + _this.opFlag, postData).then(function (response) {
+                            _this.dlgFormVisible = false;
+                            if (response.data.msgResult === "success") {
+                                _this.getTableData();
+                            }
+                            _this.$message({message: "操作成功！", type: 'success'});
+                        }).catch(function (error) {
+                            console.log(error);
+                            _this.$message({message: "操作成功！", type: 'error'});
+                        });
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            //关闭新增编辑对话框
+            closeForm: function (formName) {
+                this.$refs[formName].resetFields();
+                this.dlgFormVisible = false;
+            },
+            //图片上传按钮
+            handleUpload: function (formName) {
+                this.dlgUploadVisible = true;
+            },
+            //检测上传文件变化
+            getFile(event) {
+                let file = event.target.files[0];
+                let reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    this.dlgUpload.imgData = reader.result;
+                }
+            },
+            //图片上传
+            submitUpload: function (formName) {
+                const _this = this;
+                let postData = new FormData();
+                alert(this.dlgUpload.imgData);
+                postData.append('imgBase64', this.dlgUpload.imgData);
+                axios.post('/api/upload/image', postData).then(function (response) {
+                    _this.dlgFormVisible = false;
+                    if (response.data.msgResult === "success") {
+                        alert(response.data.objResult);
+                        _this.imgUrl = response.data.objResult;
+                        _this.closeUpload('dlgUpload');
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            //关闭图片上传对话框
+            closeUpload: function (formName) {
+                this.$refs[formName].resetFields();
+                this.dlgUploadVisible = false;
+            },
+        }
+    })
+</script>
+</body>
+</html>

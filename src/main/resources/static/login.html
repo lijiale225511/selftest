@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        body{
+            width: 100%;
+            height: 100%;
+            background-color: #253CA4;
+        }
+        h1{
+            color:#ffffff;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .box{
+            width: 303px;
+            height:500px;
+            background-color: rgba(255, 255, 255, 0.6);
+            margin: 48px auto;
+            border-radius: 12px;
+        }
+        .box1{
+            width: 302px;
+            height: 132px;
+
+
+        }
+        .box1 img{
+            border-radius: 100px;
+            width: 100px;
+            height: 100px;
+            /* margin: 30px auto; */
+            margin: 30px 100px 25px 100px;
+
+        }
+        input{
+            width: 222px;
+            height:26px;
+            border-radius:6px;
+            margin: 25px 40px 0px 40px;
+            text-indent: 29px;
+            border: 1px solid #aaaaaa;
+            outline: none;
+
+        }
+        #name{
+            background-image: url("./Image/1.jpg");
+            background-repeat: no-repeat;
+            background-position: 10px ;
+            background-size: 15px;
+
+        }
+        #secret{
+            background-image: url("./Image/1.jpg");
+            background-repeat: no-repeat;
+            background-position: 10px ;
+            background-size: 15px;
+        }
+        #ver{
+            background-image: url("./Image/1.jpg");
+            background-repeat: no-repeat;
+            background-position: 10px ;
+            background-size: 15px;
+        }
+        #submit{
+            width: 220px;
+            height: 30px;
+            line-height: 0;
+            background-color: #9acd32;
+            color: #ffffff;
+            margin: 25px 40px 0px 40px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+        }
+        #register{
+            line-height: 0;
+            width: 220px;
+            height: 30px;
+            background-color: #dc143c;
+            color: #ffffff;
+            margin: 25px 40px 0px 40px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+        }
+        p{
+            font-size: 13px;
+            margin: 15px 40px 30px 145px;
+            font-weight: bold;
+        }
+        canvas{
+            z-index: -1;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="plugin/button.css">
+
+</head>
+<body>
+<canvas id="canvas">
+    <h1>您的浏览器不支持canvas</h1>
+</canvas>
+<script src = "plugin/2.js"></script>
+<div id="login">
+    <h1>Hello! Welcome to my rubbish system</h1>
+    <br>
+    <br>
+    <div class="box">
+        <div class="box1">
+            <img src="./Image/1.jpg" alt="">
+        </div>
+        <form>
+            <input id="name"  type="text" placeholder="username" name="username">
+            <input id="secret" type="password" placeholder="password" name="password">
+            <input id="ver" placeholder="ver" type="text" name="ver"><br>
+            <br>
+            <img id="imagecode" @click="getKaptcha" style="margin-left: 90px"/>
+
+            <input id="uuid"  type="hidden" name="uuid"><br>
+            <div class="frame">
+            <button id="submit" class="btn-1" @click.prevent="setToken">用户登陆</button>
+            <button id="register" class="btn-2" @click.prevent="setToken1">管理员登陆</button>
+            </div>
+            <p>Forget Password?</p>
+        </form>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="plugin/vue.min.js"></script>
+<script type="text/javascript" src="plugin/axios.min.js"></script>
+<script type="text/javascript" src="plugin/md5.js"></script>
+<script>
+    new Vue({
+        el: '#login',
+        created() {
+            window.setToken = this.setToken
+            window.setToken = this.setToken1
+            // axios.interceptors.request.use(function (config) {
+            //   // 在发送请求之前做些什么
+            //   // 判断是否存在token,如果存在将每个页面header添加token
+            //   // alert("请求拦截器成功")
+            //   if (localStorage.getItem("token")) {
+            //     config.headers.common['token'] = localStorage.getItem("token");
+            //     // alert("存在token加入请求头，请求头为"+JSON.stringify(config.headers))
+            //   }
+            //   return config
+            // }, function (error) {//当前端有错误的时候，几乎不存在
+            //   // router.push('/login')
+            //   return Promise.reject(error)
+            // })
+        },
+        mounted()
+        {
+            axios.get('api/login/kaptcha').then(function (response) {
+                if (response.data.msgResult !== 'error') {
+                    console.log(response.data.objResult.image);
+                    document.getElementById("uuid").value = response.data.objResult.uuid;
+                    document.getElementById("imagecode").src = response.data.objResult.image
+                    console.log(response.data.objResult.image);
+                } else {
+                    this.$message.error('操作失败！')
+                }
+            }).catch(function (error) {
+                console.log(error);
+            });
+            // axios.post('javeweb/Tokenverify').then(function (response) {
+            //   const url = response.data.url
+            //   if (response.data.stata === "effective token") {
+            //     location.href = url
+            //
+            //   } else {
+            //     alert("token 已失效，请重新登录！！！！")
+            //   }
+            // }).catch(function (error) {
+            //   console.log(error);
+            // })
+        },
+        methods: {
+            getKaptcha() {
+                axios.get('api/login/kaptcha').then(function (response) {
+                    if (response.data.msgResult !== 'error') {
+                        document.getElementById("uuid").value = response.data.objResult.uuid;
+                        document.getElementById("imagecode").src = response.data.objResult.image
+                    } else {
+                        this.$message.error('操作失败！')
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            setToken() {
+                let md5password = md5(document.getElementById("secret").value)
+                const postData = {
+                    loginCode: document.getElementById("name").value,
+                    loginPwd: md5password,
+                    authCode: document.getElementById("ver").value,
+                    randomUuid: document.getElementById("uuid").value
+                }
+
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+                axios.post('api/login/check',postData, config).then(function (response) {
+                    if (response.data.msgResult == "success") {
+                        localStorage.setItem("token", response.data.objResult)
+                        window.location.href = 'user.html';
+                    }
+                    else {
+                        alert(response.data.objResult.info)
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            },
+            setToken1() {
+                // let postData  = new URLSearchParams()
+                let md5password = md5(document.getElementById("secret").value)
+                const postData = {
+                    loginCode: document.getElementById("name").value,
+                    loginPwd: md5password,
+                    authCode: document.getElementById("ver").value,
+                    randomUuid: document.getElementById("uuid").value
+                }
+                // postData.append('loginCode', document.getElementById("name").value)
+                // postData.append('loginPwd', md5password)
+                // postData.append('authCode', document.getElementById("ver").value)
+                // postData.append('randomUuid', document.getElementById("uuid").value)
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+                axios.post('api/login/check1',postData, config).then(function (response) {
+                    if (response.data.msgResult == "success") {
+                        localStorage.setItem("token", response.data.objResult)
+                        window.location.href = 'admin.html';
+                    }
+                    else {
+                        alert(response.data.objResult.info)
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                })
+            },
+        }
+    })
+</script>
+</html>

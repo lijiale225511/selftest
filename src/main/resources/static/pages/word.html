@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Word文档导出</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<template id="word">
+    <el-row :gutter="20" class="el-row" type="flex">
+        <el-col :span="8" class="el-col">
+        </el-col>
+        <el-col :span="8" class="el-col" style="color: #409EFF; text-align: center">
+            <h2>基于Axios提交的Word文档导出</h2>
+            <div style="border: 1px dotted; padding: 10px;">
+                <button @click="exportWord">Word文档导出</button>
+            </div>
+        </el-col>
+        <el-col :span="8" class="el-col">
+        </el-col>
+    </el-row>
+</template>
+<!-- 引入组件库 -->
+<script type="text/javascript" src="../plugin/vue.min.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script type="text/javascript" src="../plugin/axios.min.js"></script>
+<script>
+    const vm = new Vue({
+        el: '#word',
+        created() {
+            axios.interceptors.request.use(
+                config => {
+                    // 这里的config包含每次请求的内容，假设有一个token
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                        // 添加headers
+                        config.headers.token = token;
+                        config.responseType = 'blob';
+                    }
+                    return config
+                },
+                error => {
+                    return Promise.reject(error)
+                }
+            )
+            axios.interceptors.response.use(
+                response => {
+                    if (response.headers.token_status !== 'ok') {
+                        window.location.href = 'login.html';
+                    }
+                    return response
+                },
+                error => {
+                    return Promise.reject(error)
+                }
+            )
+        },
+        methods: {
+            exportWord() {
+                axios.post("../api/template/exportWord").then(function (response) {
+                    const url = window.URL.createObjectURL(response.data)
+                    // 将该url包装成一个连接，并且模拟点击，从而实现下载的功能
+                    const link = document.createElement('a')
+                    link.href = url
+                    document.body.appendChild(link);
+                    link.click();
+                    // 释放资源
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(link)
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            }
+        }
+    })
+</script>
+</body>
+</html>
